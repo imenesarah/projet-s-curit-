@@ -1,0 +1,25 @@
+import smtplib, ssl
+from email.message import EmailMessage
+
+
+sender = 'benss1352@gmail.com' #email de test 
+psw = "BS+-123456"
+print("sender : " + sender )
+xrecev=input("To")
+xobjet=input("Objet : ")
+xmsg=input("Message : ")
+
+
+
+msg = EmailMessage()
+msg.set_content(xmsg)
+msg["Subject"] = xobjet
+msg["From"] = sender
+msg["To"] = xrecev
+context=ssl.create_default_context()
+with smtplib.SMTP('smtp.gmail.com',587) as smtp:
+    smtp.starttls(context=context)
+    smtp.login(sender ,psw )
+    smtp.send_message(msg)
+
+print(' ok ')

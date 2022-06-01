@@ -1,0 +1,98 @@
+#import json
+import tweepy
+from textblob import TextBlob
+import time
+
+
+
+###############################################################################################################################################################
+access_token="XXXXXXX"
+access_token_secret="XXXXXXXX"
+API_key="XXXXXXX"
+API_secret_key="XXXXXXXX"
+
+
+auth = tweepy.OAuthHandler(API_key, API_secret_key)
+auth.set_access_token(access_token, access_token_secret)
+api = tweepy.API(auth)
+
+#Authentification process: If everything is correct, you should be able to see a response saying "Authentication Successful", else you see Authentication Error
+try:
+    api.verify_credentials()
+    print("Authentication Successful")
+except:
+    print("Authentication Error")
+ ##############################################################################################################################################################
+
+api.update_status("This will my status") # cette fonction permet de mettre à jour le status. le text du status est  celui entre " " . 
+api.update_profile(description="Ajouter du text pour metttre à jour la description")  # cette fonction permet de mettre à jour le profile.
+
+my_profile_name='' # c'est pour mettre le nom de profile 
+user=api.get_user(screen_name=my_profile_name)
+print(user.name)    #ecrire le nom de profile 
+print(user.description) # ecire la description du profile 
+api.create_friendship(user.id)   #ajouter user a la liste des amis
+
+# Pour afficher les followers
+list_followers=[] 
+for follower in user.followers():
+  list_followers.append(follower.name)
+
+print(list_followers)
+
+#Regarder les utilisateur que j'ai bloqués
+blocked_contact=[]
+for block in api.blocks():
+    blocked_contact.append(block.name)
+print(blocked_contact)
+
+# Trouver les tweets contenant un mot clé spécifier 
+key_word='python'  # par exemple le mot clé à chercher est python
+language='en'             # la langue de recherche est l'anglais
+nombre_recent=15            # 15 tweet les plus récents
+for tweet in api.search(key_word, language, nombre_recent):
+    print(f"{tweet.user.name}:{tweet.text}")
+
+
+# A part mon profile, faire des likes pour les 15 profiles qui se trouvent dans home
+tweets_home = api.home_timeline(count=15)
+for tweet in tweets_home:
+  if tweet.author.name.lower() != my_profile_name:
+    if not tweet.favorited:
+      api.create_favorite(tweet.id)
+
+tweets_user= api.user_timeline(user_id=user.id)
+for tweet in  tweets_user:
+  if not tweet.favorited:
+    api.create_favorite(tweet.id)
+
+
+
+# methode pour repondre automatiquement sur un message concernant un hashtag donné
+FILE_NAME = 'file.txt'
+
+def get_last_id(FILE_NAME):
+    f_read = open(FILE_NAME, 'r')
+    last_id = int(f_read.read().strip())
+    f_read.close()
+    return last_id
+
+def store_last_id(last_id, FILE_NAME):
+    f_write = open(fFILE_NAME, 'w')
+    f_write.write(str(last_seen_id))
+    f_write.close()
+    return
+
+def reply_to_tweets():
+    last_id = get_last_id(FILE_NAME)
+    mentions = api.mentions_timeline(last_id,tweet_mode='extended')
+    for mention in reversed(mentions):
+        last_id = mention.id
+        store_last_seen_id(last_id, FILE_NAME)
+        if '#hashtag' in mention.full_text.lower():
+            print('found #hashtag', flush=True)
+            api.update_status('@' + mention.user.screen_name +'#hashtag back to you!', mention.id)
+
+while True:
+    reply_to_tweets()
+    time.sleep(15)
